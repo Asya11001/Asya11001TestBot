@@ -1,7 +1,31 @@
 const TelegramApi = require("node-telegram-bot-api")
 const axios = require("axios");
 
-const token = "5681973392:AAEjBzLGIYx4lZgm-Kop3qAwCzuqZ49cMrM"
+const token = "5734817672:AAE3Y6p99ATfTxcECkY_BxM64JGuDxz-Nzk"
+
+function getValueReg(string, currency) {
+    // if currency == true -> TON
+    // else RUB
+    try{
+        let reg = currency ? /Покупка: (?<value>.*?) TON/g : / за (?<value>.*?) RUB/g
+        console.log(string, reg, currency)
+        let {groups: {value}} = reg.exec(string)
+        return parseFloat(value.replace("'", ""))
+    }catch(err){
+        console.error(err)
+    }
+}
+
+const getTime = () => {
+    const time = new Date()
+    const year = time.getFullYear()
+    const month = String(time.getMonth() + 1).length === 1 ? `0${time.getMonth() + 1}` : time.getMonth() + 1
+    const day = String(time.getDate() + 1).length === 1 ? `0${time.getDate() + 1}` : time.getDate() + 1
+    const hours = String(time.getHours()).length === 1 ? `0${time.getHours()}` : time.getHours()
+    const mins = String(time.getMinutes()).length === 1 ? `0${time.getMinutes()}` : time.getMinutes()
+    const secs = String(time.getSeconds()).length === 1 ? `0${time.getSeconds()}` : time.getSeconds()
+    return `${year}.${month}.${day} ${hours}:${mins}:${secs}`
+}
 
 const getP2pUsdBuyPrice = async () => {
     let resp = await axios.post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", {
@@ -42,6 +66,11 @@ const StartBot = () => {
     bot.on('message', async msg => {
         const text = msg.text;
         const chatId = msg.chat.id;
+        console.log("===========")
+        console.log(text)
+        console.log("===========")
+        console.log(msg)
+        console.log("===========")
 
         if (text == '/start')
         {
@@ -64,20 +93,20 @@ const StartBot = () => {
 
         if (text.split(" ")[0] === '/check')
         {
-
             const priceUSDT = await getP2pUsdBuyPrice()
             const priceFtx = await getFtxTonPrice()
             const inputVolume = getRightNum(text.split(" ")[1])
             const Result = parseInt(priceFtx * priceUSDT * inputVolume) > 25500 ? `${parseInt(priceFtx * priceUSDT * inputVolume)} (+${(parseInt(priceFtx * priceUSDT * inputVolume)) - 25500}) 💵💵💵` : `${parseInt(priceFtx * priceUSDT * inputVolume)} (${parseInt(priceFtx * priceUSDT * inputVolume) - 25500})`
-            const time = new Date()
-            const year = time.getFullYear()
-            const month = String(time.getMonth() + 1).length === 1 ? `0${time.getMonth() + 1}` : time.getMonth() + 1
-            const day = String(time.getDate() + 1).length === 1 ? `0${time.getDate() + 1}` : time.getDate() + 1
-            const hours = String(time.getHours()).length === 1 ? `0${time.getHours()}` : time.getHours()
-            const mins = String(time.getMinutes()).length === 1 ? `0${time.getMinutes()}` : time.getMinutes()
-            const secs = String(time.getSeconds()).length === 1 ? `0${time.getSeconds()}` : time.getSeconds()
-            const currentDate = `${year}.${month}.${day} ${hours}:${mins}:${secs}`
+            const currentDate = getTime()
+            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
+        }
+        if (text.indexOf("Купить криптовалюту") !== -1){
 
+            const priceUSDT = await getP2pUsdBuyPrice()
+            const priceFtx = await getFtxTonPrice()
+            const inputVolume = getValueReg(text, true)
+            const Result = parseInt(priceFtx * priceUSDT * inputVolume) > 25500 ? `${parseInt(priceFtx * priceUSDT * inputVolume)} (+${(parseInt(priceFtx * priceUSDT * inputVolume)) - 25500}) 💵💵💵` : `${parseInt(priceFtx * priceUSDT * inputVolume)} (${parseInt(priceFtx * priceUSDT * inputVolume) - 25500})`
+            const currentDate = getTime()
             return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
         }
         return bot.sendMessage(chatId, "Я тебя не понял...")
