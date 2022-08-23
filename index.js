@@ -1,7 +1,7 @@
 const TelegramApi = require("node-telegram-bot-api")
 const axios = require("axios");
 
-const token = "5734817672:AAE3Y6p99ATfTxcECkY_BxM64JGuDxz-Nzk"
+const token = "5681973392:AAEjBzLGIYx4lZgm-Kop3qAwCzuqZ49cMrM"
 
 function getValueReg(string, currency) {
     // if currency == true -> TON
