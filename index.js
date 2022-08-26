@@ -11,12 +11,11 @@ const AccountsId = {
 function getValueReg(string, currency) {
     // if currency == true -> TON
     // else RUB
-    try{
+    try {
         let reg = currency ? /Покупка: (?<value>.*?) TON/g : / за (?<value>.*?) RUB/g
-        console.log(string, reg, currency)
         let {groups: {value}} = reg.exec(string)
         return parseFloat(value.replace("'", ""))
-    }catch(err){
+    } catch (err) {
         console.error(err)
     }
 }
@@ -42,9 +41,13 @@ const getP2pUsdBuyPrice = async () => {
         "publisherType": null,
         "rows": 1,
         "tradeType": "BUY",
-        "transAmount":  "0"
+        "transAmount": "0"
     })
-    return resp.data.data[0].adv.price
+    try {
+        return resp.data.data[0].adv.price
+    }catch (err) {
+        console.error(err)
+    }
 }
 
 const getFtxTonPrice = async () => {
@@ -77,27 +80,22 @@ const StartBot = () => {
         console.log(msg)
         // console.log("===========")
 
-        if (text == '/start')
-        {
+        if (text == '/start') {
             await bot.sendPhoto(chatId, "https://tlgrm.ru/_/stickers/985/bdc/985bdc40-fd5f-3b50-a5b3-80ddaad23565/15.jpg")
-            return  bot.sendMessage(chatId, "Добро пожаловать в чертоги бота! ")
+            return bot.sendMessage(chatId, "Добро пожаловать в чертоги бота! ")
         }
-        if (text == '/info')
-        {
+        if (text == '/info') {
             return bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name}`)
         }
-        if (text == '/check')
-        {
+        if (text == '/check') {
             return bot.sendMessage(chatId, "Введите количество покупки TONCOIN`a за 25k рублей")
         }
-        if (text == '/secret')
-        {
+        if (text == '/secret') {
             await bot.sendPhoto(chatId, "https://7factov.ru/wp-content/uploads/2020/03/9717e5cf185c1e7dd55196a882903601.jpg")
             return bot.sendMessage(chatId, "АЙНУР БАЛБАЛЕЙ ДУРАЧОК БЕБЕБЕ")
         }
 
-        if (text.split(" ")[0] == '/check')
-        {
+        if (text.split(" ")[0] == '/check') {
             const priceUSDT = await getP2pUsdBuyPrice()
             const priceFtx = await getFtxTonPrice()
             const inputVolume = getRightNum(text.split(" ")[1])
@@ -105,7 +103,7 @@ const StartBot = () => {
             const currentDate = getTime()
             return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
         }
-        if (text.indexOf("Купить криптовалюту") !== -1){
+        if (text.indexOf("Купить криптовалюту") !== -1) {
 
             const priceUSDT = await getP2pUsdBuyPrice()
             const priceFtx = await getFtxTonPrice()
@@ -113,7 +111,21 @@ const StartBot = () => {
             const gapValue = priceFtx * priceUSDT * inputVolume
             const Result = parseInt(gapValue) > 25500 ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - 25500}) 💵💵💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - 25500})`
             const currentDate = getTime()
-            if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
+
+            // let resp = await axios.post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", {
+            //     "asset": "USDT",
+            //     "fiat": "RUB",
+            //     "merchantCheck": false,
+            //     "page": 1,
+            //     "payTypes": ["Tinkoff"],
+            //     "publisherType": null,
+            //     "rows": 1,
+            //     "tradeType": "BUY",
+            //     "transAmount": "0"
+            // })
+            //
+            // console.log(resp.data.data)
+            // if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
             return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
         }
 
@@ -121,10 +133,9 @@ const StartBot = () => {
     })
 }
 
-try{
+try {
     StartBot()
-}
-catch (e) {
+} catch (e) {
 
 }
 
