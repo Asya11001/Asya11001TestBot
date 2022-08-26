@@ -44,10 +44,18 @@ const getP2pUsdBuyPrice = async () => {
         "tradeType": "BUY",
         "transAmount": "0"
     })
+    console.log(resp)
+    console.log("===============")
+    console.log(resp.data)
+    console.log("===============")
+    // console.log(resp.data.data)
+    console.log("===============")
     try {
         return resp.data.data[0].adv.price
     } catch (err) {
+
         console.error(err)
+        return "No way to get price"
     }
 }
 
@@ -80,7 +88,8 @@ const StartBot = () => {
         // console.log("===========")
         console.log(msg)
         // console.log("===========")
-
+        await bot.sendPhoto(chatId, "https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk0-ec5W5QIM5QTbiCToKv_qaKTM5SRkZCeTgDn6uOyic")
+        return bot.sendMessage(chatId, "Бот временно не работает, вот вам поссума:)")
         if (text == '/start') {
             await bot.sendPhoto(chatId, "https://tlgrm.ru/_/stickers/985/bdc/985bdc40-fd5f-3b50-a5b3-80ddaad23565/15.jpg")
             return bot.sendMessage(chatId, "Добро пожаловать в чертоги бота! ")
