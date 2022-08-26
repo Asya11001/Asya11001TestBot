@@ -125,7 +125,7 @@ const StartBot = () => {
             // })
             //
             // console.log(resp.data.data)
-            // if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
+            if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
             return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
         }
 
