@@ -1,8 +1,9 @@
 const TelegramApi = require("node-telegram-bot-api")
 const axios = require("axios");
 
-const token = "5681973392:AAEjBzLGIYx4lZgm-Kop3qAwCzuqZ49cMrM"
+// import {token} from "./token.js"
 
+const token = "5681973392:AAEjBzLGIYx4lZgm-Kop3qAwCzuqZ49cMrM"
 const AccountsId = {
     Ainur: 623361536,
     Arseniy: 5668343908
@@ -45,7 +46,7 @@ const getP2pUsdBuyPrice = async () => {
     })
     try {
         return resp.data.data[0].adv.price
-    }catch (err) {
+    } catch (err) {
         console.error(err)
     }
 }
