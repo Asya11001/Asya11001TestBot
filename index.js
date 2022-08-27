@@ -38,25 +38,23 @@ const getP2pUsdBuyPrice = async () => {
         "fiat": "RUB",
         "merchantCheck": false,
         "page": 1,
-        "payTypes": ["Tinkoff"],
+        "payTypes": ["TinkoffNew"],
+        // "payTypes": [],
         "publisherType": null,
-        "rows": 1,
+        "rows": 5,
         "tradeType": "BUY",
-        "transAmount": "0"
+        "transAmount":  "0"
     })
-    console.log(resp)
-    console.log("===============")
-    console.log(resp.data)
-    console.log("===============")
-    // console.log(resp.data.data)
-    console.log("===============")
-    try {
-        return resp.data.data[0].adv.price
-    } catch (err) {
 
-        console.error(err)
-        return "No way to get price"
-    }
+    let data = resp.data
+    let mainPrice = resp.data.data[0].adv.price
+    let string = `Price: ${mainPrice}(${data.data[0].adv.surplusAmount})
+        Price: ${data.data[1].adv.price}(${data.data[1].adv.surplusAmount})
+        Price: ${data.data[2].adv.price}(${data.data[2].adv.surplusAmount})
+        Price: ${data.data[3].adv.price}(${data.data[3].adv.surplusAmount})
+        Price: ${data.data[4].adv.price}(${data.data[4].adv.surplusAmount})`
+    return [mainPrice, string]
+
 }
 
 const getFtxTonPrice = async () => {
@@ -88,8 +86,8 @@ const StartBot = () => {
         // console.log("===========")
         console.log(msg)
         // console.log("===========")
-        await bot.sendPhoto(chatId, "https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk0-ec5W5QIM5QTbiCToKv_qaKTM5SRkZCeTgDn6uOyic")
-        return bot.sendMessage(chatId, "Бот временно не работает, вот вам поссума:)")
+        // await bot.sendPhoto(chatId, "https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk0-ec5W5QIM5QTbiCToKv_qaKTM5SRkZCeTgDn6uOyic")
+        // return bot.sendMessage(chatId, "Бот временно не работает, вот вам поссума:)")
         if (text == '/start') {
             await bot.sendPhoto(chatId, "https://tlgrm.ru/_/stickers/985/bdc/985bdc40-fd5f-3b50-a5b3-80ddaad23565/15.jpg")
             return bot.sendMessage(chatId, "Добро пожаловать в чертоги бота! ")
@@ -106,37 +104,27 @@ const StartBot = () => {
         }
 
         if (text.split(" ")[0] == '/check') {
-            const priceUSDT = await getP2pUsdBuyPrice()
+            const arrayP2pUsdBuyPrice = await getP2pUsdBuyPrice()
+            const priceUSDT = arrayP2pUsdBuyPrice[0]
+            const bid = arrayP2pUsdBuyPrice[1]
             const priceFtx = await getFtxTonPrice()
             const inputVolume = getRightNum(text.split(" ")[1])
             const Result = parseInt(priceFtx * priceUSDT * inputVolume) > 25500 ? `${parseInt(priceFtx * priceUSDT * inputVolume)} (+${(parseInt(priceFtx * priceUSDT * inputVolume)) - 25500}) 💵💵💵` : `${parseInt(priceFtx * priceUSDT * inputVolume)} (${parseInt(priceFtx * priceUSDT * inputVolume) - 25500})`
             const currentDate = getTime()
-            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
+            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nBid: ${bid}\nFtx price: ${priceFtx}\nResult: ${Result}`)
         }
         if (text.indexOf("Купить криптовалюту") !== -1) {
-
-            const priceUSDT = await getP2pUsdBuyPrice()
+            const arrayP2pUsdBuyPrice = await getP2pUsdBuyPrice()
+            const priceUSDT = arrayP2pUsdBuyPrice[0]
+            const bid = arrayP2pUsdBuyPrice[1]
             const priceFtx = await getFtxTonPrice()
             const inputVolume = getValueReg(text, true)
             const gapValue = priceFtx * priceUSDT * inputVolume
             const Result = parseInt(gapValue) > 25500 ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - 25500}) 💵💵💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - 25500})`
             const currentDate = getTime()
 
-            // let resp = await axios.post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", {
-            //     "asset": "USDT",
-            //     "fiat": "RUB",
-            //     "merchantCheck": false,
-            //     "page": 1,
-            //     "payTypes": ["Tinkoff"],
-            //     "publisherType": null,
-            //     "rows": 1,
-            //     "tradeType": "BUY",
-            //     "transAmount": "0"
-            // })
-            //
-            // console.log(resp.data.data)
-            if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
-            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nFtx price: ${priceFtx}\nResult: ${Result}`)
+            // if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
+            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nBid: ${bid}\nFtx price: ${priceFtx}\nResult: ${Result}`)
         }
 
         return bot.sendMessage(chatId, "Я тебя не понял...")
