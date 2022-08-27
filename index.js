@@ -35,7 +35,7 @@ const getTime = () => {
 const makeStringBid = (data, valueInput) => {
     let value = data.data.length < valueInput ? data.data.length : valueInput
     let mainPrice = data.data[0].adv.price
-    let string = `Price: ${mainPrice}₽(${data.data[0].adv.surplusAmount}$)`
+    let string = `Price: ${mainPrice}₽ (${data.data[0].adv.surplusAmount}$)`
     for (let i = 1; i < value; i++) {
         string += `\n        Price: ${data.data[i].adv.price}₽ (${data.data[i].adv.surplusAmount}$)`
     }
