@@ -32,6 +32,16 @@ const getTime = () => {
     return `${year}.${month}.${day} ${hours}:${mins}:${secs}`
 }
 
+const makeStringBid = (data, valueInput) => {
+    let value = data.data.length < valueInput ? data.data.length : valueInput
+    let mainPrice = data.data[0].adv.price
+    let string = `Price: ${mainPrice}₽(${data.data[0].adv.surplusAmount}$)`
+    for (let i = 1; i < value; i++) {
+        string += `\n        Price: ${data.data[i].adv.price}₽ (${data.data[i].adv.surplusAmount}$)`
+    }
+    string += `\n        ...see more ${data.total - value}`
+    return string
+}
 const getP2pUsdBuyPrice = async () => {
     let resp = await axios.post("https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search", {
         "asset": "USDT",
@@ -41,18 +51,13 @@ const getP2pUsdBuyPrice = async () => {
         "payTypes": ["TinkoffNew"],
         // "payTypes": [],
         "publisherType": null,
-        "rows": 5,
+        "rows": 20, //1-20
         "tradeType": "BUY",
-        "transAmount":  "0"
+        "transAmount": "0"
     })
 
-    let data = resp.data
+    let string = makeStringBid(resp.data, 5)
     let mainPrice = resp.data.data[0].adv.price
-    let string = `Price: ${mainPrice}(${data.data[0].adv.surplusAmount})
-        Price: ${data.data[1].adv.price}(${data.data[1].adv.surplusAmount})
-        Price: ${data.data[2].adv.price}(${data.data[2].adv.surplusAmount})
-        Price: ${data.data[3].adv.price}(${data.data[3].adv.surplusAmount})
-        Price: ${data.data[4].adv.price}(${data.data[4].adv.surplusAmount})`
     return [mainPrice, string]
 
 }
@@ -120,11 +125,11 @@ const StartBot = () => {
             const priceFtx = await getFtxTonPrice()
             const inputVolume = getValueReg(text, true)
             const gapValue = priceFtx * priceUSDT * inputVolume
-            const Result = parseInt(gapValue) > 25500 ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - 25500}) 💵💵💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - 25500})`
+            const Result = parseInt(gapValue) > 25500 ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - 25500}₽) 💵💵💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - 25500}₽)`
             const currentDate = getTime()
 
             // if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
-            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nBid: ${bid}\nFtx price: ${priceFtx}\nResult: ${Result}`)
+            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}₽\nBid: ${bid}\nFtx price: ${priceFtx}$\nResult: ${Result}`)
         }
 
         return bot.sendMessage(chatId, "Я тебя не понял...")
