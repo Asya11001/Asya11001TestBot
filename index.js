@@ -1,9 +1,8 @@
 const TelegramApi = require("node-telegram-bot-api")
 const axios = require("axios");
 
-// import {token} from "./token.js"
-
 const token = "5681973392:AAEjBzLGIYx4lZgm-Kop3qAwCzuqZ49cMrM"
+
 const AccountsId = {
     Ainur: 623361536,
     Arseniy: 5668343908
@@ -79,7 +78,7 @@ const StartBot = () => {
     bot.setMyCommands([
         {command: '/start', description: 'Начальное приветствие'},
         {command: '/info', description: 'Получить информацию о пользователе'},
-        {command: '/check', description: 'Получить информацию о spread`e'},
+        // {command: '/check', description: 'Получить информацию о spread`e'},
     ])
 
 
@@ -108,28 +107,31 @@ const StartBot = () => {
             return bot.sendMessage(chatId, "АЙНУР БАЛБАЛЕЙ ДУРАЧОК БЕБЕБЕ")
         }
 
-        if (text.split(" ")[0] == '/check') {
-            const arrayP2pUsdBuyPrice = await getP2pUsdBuyPrice()
-            const priceUSDT = arrayP2pUsdBuyPrice[0]
-            const bid = arrayP2pUsdBuyPrice[1]
-            const priceFtx = await getFtxTonPrice()
-            const inputVolume = getRightNum(text.split(" ")[1])
-            const Result = parseInt(priceFtx * priceUSDT * inputVolume) > 25500 ? `${parseInt(priceFtx * priceUSDT * inputVolume)} (+${(parseInt(priceFtx * priceUSDT * inputVolume)) - 25500}) 💵💵💵` : `${parseInt(priceFtx * priceUSDT * inputVolume)} (${parseInt(priceFtx * priceUSDT * inputVolume) - 25500})`
-            const currentDate = getTime()
-            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nBid: ${bid}\nFtx price: ${priceFtx}\nResult: ${Result}`)
-        }
+        // if (text.split(" ")[0] == '/check') {
+        //     const arrayP2pUsdBuyPrice = await getP2pUsdBuyPrice()
+        //     const priceUSDT = arrayP2pUsdBuyPrice[0]
+        //     const bid = arrayP2pUsdBuyPrice[1]
+        //     const priceFtx = await getFtxTonPrice()
+        //     const inputVolume = getRightNum(text.split(" ")[1])
+        //     const Result = parseInt(priceFtx * priceUSDT * inputVolume) > 25500 ? `${parseInt(priceFtx * priceUSDT * inputVolume)} (+${(parseInt(priceFtx * priceUSDT * inputVolume)) - 25500}) 💵💵💵` : `${parseInt(priceFtx * priceUSDT * inputVolume)} (${parseInt(priceFtx * priceUSDT * inputVolume) - 25500})`
+        //     const currentDate = getTime()
+        //     return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}\nBid: ${bid}\nFtx price: ${priceFtx}\nResult: ${Result}`)
+        // }
         if (text.indexOf("Купить криптовалюту") !== -1) {
             const arrayP2pUsdBuyPrice = await getP2pUsdBuyPrice()
             const priceUSDT = arrayP2pUsdBuyPrice[0]
             const bid = arrayP2pUsdBuyPrice[1]
             const priceFtx = await getFtxTonPrice()
-            const inputVolume = getValueReg(text, true)
-            const gapValue = priceFtx * priceUSDT * inputVolume
-            const Result = parseInt(gapValue) > 25500 ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - 25500}₽) 💵💵💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - 25500}₽)`
+            const inputFtx = getValueReg(text, true)
+            const inputRub = getValueReg(text, false)
+            const gapValue = priceFtx * priceUSDT * inputFtx
+            let tempString = String(gapValue/inputRub * 100)
+            console.log(tempString.slice(0,-2))
+            const Result = parseInt(gapValue) > inputRub ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - inputRub}₽) 💵[${parseFloat(String(gapValue/inputRub * 100).slice(2,-12))}% profit]💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - inputRub}₽)`
             const currentDate = getTime()
 
             // if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
-            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume: ${inputVolume}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}₽\nBid: ${bid}\nFtx price: ${priceFtx}$\nResult: ${Result}`)
+            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume FTX: ${inputFtx}\nInput volume RUB: ${inputRub}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}₽\nBid: ${bid}\nFtx price: ${priceFtx}$\nResult: ${Result}`)
         }
 
         return bot.sendMessage(chatId, "Я тебя не понял...")
