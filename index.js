@@ -8,17 +8,44 @@ const AccountsId = {
     Arseniy: 5668343908
 }
 
-function getValueReg(string, currency) {
+// function getValueReg(string, currency) {
+//     // if currency == true -> TON
+//     // else RUB
+//     try {
+//         let reg = currency ? /Покупка: (?<value>.*?) TON/g : / за (?<value>.*?) RUB/g
+//         let {groups: {value}} = reg.exec(string)
+//         return parseFloat(value.replace("'", ""))
+//     } catch (err) {
+//         console.error(err)
+//     }
+// }
+
+function getValueRegForSeleniumBot(string, currency) {
+    //Sorry for this worst solution...
     // if currency == true -> TON
     // else RUB
     try {
-        let reg = currency ? /Покупка: (?<value>.*?) TON/g : / за (?<value>.*?) RUB/g
+        let reg = currency ? /Покупка:<\/strong>&nbsp;(?<value>.*?) TON/g : /(\d) TON за (?<value>.*?) RUB/g
         let {groups: {value}} = reg.exec(string)
         return parseFloat(value.replace("'", ""))
     } catch (err) {
         console.error(err)
     }
 }
+
+function getValueReg(string, currency){
+    try{
+        let reg = currency ? /(((\d{1,10})\.(\d{1,15})))/g : /((\d{1,5})\'(\d{1,15}))/g
+        let value = string.match(reg)[0]
+        return parseFloat(value.replace("'", ""))
+    }
+    catch (e) {
+        console.error(err)
+    }
+}
+
+
+
 
 const getTime = () => {
     const time = new Date()
@@ -105,6 +132,24 @@ const StartBot = () => {
         if (text == '/secret') {
             await bot.sendPhoto(chatId, "https://7factov.ru/wp-content/uploads/2020/03/9717e5cf185c1e7dd55196a882903601.jpg")
             return bot.sendMessage(chatId, "АЙНУР БАЛБАЛЕЙ ДУРАЧОК БЕБЕБЕ")
+        }
+        if (text.indexOf('&nbsp;Купить криптовалюту:') !== -1) {
+
+            const arrayP2pUsdBuyPrice = await getP2pUsdBuyPrice()
+            const priceUSDT = arrayP2pUsdBuyPrice[0]
+            const bid = arrayP2pUsdBuyPrice[1]
+            const priceFtx = await getFtxTonPrice()
+            const inputFtx = getValueReg(text, true)
+            const inputRub = getValueReg(text, false)
+            const gapValue = priceFtx * priceUSDT * inputFtx
+            let tempString = String(gapValue/inputRub * 100)
+            console.log(tempString.slice(0,-2))
+            const Result = parseInt(gapValue) > inputRub ? `${parseInt(gapValue)} (+${(parseInt(gapValue)) - inputRub}₽) 💵[${parseFloat(String(gapValue/inputRub * 100).slice(2,-12))}% profit]💵` : `${parseInt(gapValue)} (${parseInt(gapValue) - inputRub}₽)`
+            const currentDate = getTime()
+
+            // if (gapValue > 25700) await bot.sendMessage(AccountsId.Ainur, `Result: ${Result}`)
+            return bot.sendMessage(chatId, `Date: ${currentDate}\nInput volume FTX: ${inputFtx}\nInput volume RUB: ${inputRub}\nAsset: USDT\nFiat: RUB\nBank: Tinkoff\nPrice: ${priceUSDT}₽\nBid: ${bid}\nFtx price: ${priceFtx}$\nResult: ${Result}`)
+
         }
 
         // if (text.split(" ")[0] == '/check') {
